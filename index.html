@@ -1,0 +1,148 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Drag and drop on grid</title>
+	<style>
+		body { background-color: #333333; }
+		canvas { background-color: #333333; }
+	</style>
+</head>
+<body onload="init()">
+	<div align="center">
+		<!-- <canvas id="game-canvas" width="512" height="384"></canvas> -->
+	</div>
+
+<script type="text/javascript" src="pixi.js"></script>
+<script>
+function init() {
+	console.log("init() successfully called.");
+	// stage = new PIXI.Container();
+	// renderer = PIXI.autoDetectRenderer(512,384,{view:document.getElementById("game-canvas")});
+
+	// renderer.render(stage);
+
+	var app = new PIXI.Application(500, 500, {backgroundColor : 0x1099bb});
+	document.body.appendChild(app.view);
+
+	var displayWidth = 500;
+	var displayHeight = 500;
+
+	var width = 50;
+	var height = 50;
+
+	// create a texture from an image path
+	var texture = PIXI.Texture.fromImage('2.png');
+	var textureCase = PIXI.Texture.fromImage('case.png');
+
+	// Scale mode for pixelation
+	texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+
+
+	//+ Création de la grille 10 ligne / 10 collones
+	var x = width;
+	var y = height;
+	for (var j = 0; j < 10; j++) {
+		for (var i = 0; i < 10; i++) {
+			createGrid(x*i,y*j);	
+		}
+	}
+
+
+	createBox(25,25);
+
+	function createBox(x, y) {
+
+	    // create our little bunny friend..
+	    var boxSprite = new PIXI.Sprite(texture);
+
+	    // enable interactive.Respond to mouse and touch events
+	    boxSprite.interactive = true;
+
+	    // hand cursor
+	    boxSprite.buttonMode = true;
+
+	    // center the bunny's anchor point
+	    boxSprite.anchor.set(0.5);
+
+	    // setup events for mouse + touch using
+	    // the pointer events
+	    boxSprite
+	    .on('pointerdown', onDragStart)
+	    .on('pointerup', onDragEnd)
+	    .on('pointerupoutside', onDragEnd)
+	    .on('pointermove', onDragMove);
+
+	    // For touch-only events
+	    // .on('touchstart', onDragStart)
+	    // .on('touchend', onDragEnd)
+	    // .on('touchendoutside', onDragEnd)
+	    // .on('touchmove', onDragMove);
+
+	    // move the sprite to its designated position
+	    boxSprite.x = x;
+	    boxSprite.y = y;
+
+	    // add it to the stage
+	    app.stage.addChild(boxSprite);
+	}
+
+	function createGrid(x,y) {
+		var spriteCase = new PIXI.Sprite(textureCase);
+
+		spriteCase.x = x;
+		spriteCase.y = y;
+		
+		app.stage.addChild(spriteCase)	
+	}
+
+	function onDragStart(event) {
+	    // store a reference to the data
+	    // the reason for this is because of multitouch
+	    // we want to track the movement of this particular touch
+	    this.data = event.data;
+	    this.alpha = 0.5;
+	    this.dragging = true;
+	}
+
+	function onDragEnd() {
+		this.alpha = 1;
+		this.dragging = false;
+	    // set the interaction data to null
+	    this.data = null;
+
+	    //+ Position l'axe x sur un multiple de de la largeur
+	    //+  de lui meme
+		var wvar = this.x / width;
+		wvar = parseInt(wvar,10);
+		wvar = wvar * width + (width/2); //+ (width/2) compense anchor
+		this.x = wvar;
+	 	
+	 	//+ Positionne l'axe y sur un multiple de la hauteur
+	 	//+ de lui meme
+	 	wvar = this.y / height;
+	 	wvar = parseInt(wvar,10);
+	 	wvar = wvar * height + (height/2); //+ (height/2) compense anchor
+	 	this.y = wvar;
+
+
+	 	//+ Si on sort du cadre
+	 	if(this.x > displayWidth)
+	 		this.x = this.x - width;
+	 	if(this.y > displayHeight)
+	 		this.y = this.y - height; 
+
+	}
+
+	function onDragMove() {
+		if (this.dragging) {
+			var newPosition = this.data.getLocalPosition(this.parent);
+			this.x = newPosition.x;
+			this.y = newPosition.y;
+		}
+	}
+
+} //+ Fin function init()
+
+</script>
+</body>
+</html>
